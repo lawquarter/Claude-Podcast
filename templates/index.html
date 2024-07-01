@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 90%;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            color: #4a4a4a;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+        textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            background: #fff;
+            color: #495057;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        textarea:focus, select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 2rem;
+            background: #e9ecef;
+            padding: 1rem;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+        #audioPlayer {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #scriptEditor {
+            display: none;
+            margin-top: 2rem;
+        }
+        #scriptTextarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Content Generator</h1>
+        <form id="contentForm">
+            <div class="input-group">
+                <label for="article">Article:</label>
+                <textarea id="article" name="article" rows="10" required></textarea>
+            </div>
+            <div class="input-group">
+                <label for="style">Content Style:</label>
+                <select id="style" name="style" required>
+                    <option value="">Select a style</option>
+                    <option value="podcast">Podcast</option>
+                    <option value="news">News Article</option>
+                </select>
+            </div>
+            <button type="submit">Generate Content</button>
+        </form>
+        <div id="result"></div>
+        <div id="scriptEditor">
+            <textarea id="scriptTextarea"></textarea>
+            <button id="generateAudioBtn">Generate Podcast</button>
+        </div>
+        <audio id="audioPlayer" controls style="display: none;"></audio>
+    </div>
+
+    <script>
+        const form = document.getElementById('contentForm');
+        const articleTextarea = document.getElementById('article');
+        const styleSelect = document.getElementById('style');
+        const resultDiv = document.getElementById('result');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const scriptEditor = document.getElementById('scriptEditor');
+        const scriptTextarea = document.getElementById('scriptTextarea');
+        const generateAudioBtn = document.getElementById('generateAudioBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const article = articleTextarea.value;
+            const style = styleSelect.value;
+            
+            const response = await fetch('/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ article, style }),
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.textContent = `Error: ${data.error}`;
+                scriptEditor.style.display = 'none';
+                audioPlayer.style.display = 'none';
+            } else if (data.script) {
+                resultDiv.textContent = 'Script generated. You can edit it below:';
+                scriptTextarea.value = data.script;
+                scriptEditor.style.display = 'block';
+                audioPlayer.style.display = 'none';
+            } else if (data.article) {
+                resultDiv.textContent = data.article;
+                scriptEditor.style.display = 'none';
+                audioPlayer.style.display = 'none';
+            }
+
+            // Animate the result
+            gsap.from("#result", {
+                duration: 1,
+                opacity: 0,
+                y: 50,
+                ease: "power3.out"
+            });
+        });
+
+        generateAudioBtn.addEventListener('click', async () => {
+            const editedScript = scriptTextarea.value;
+            
+            const response = await fetch('/generate-audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ script: editedScript }),
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.textContent = `Error: ${data.error}`;
+                audioPlayer.style.display = 'none';
+            } else if (data.audio_filename) {
+                audioPlayer.src = `/download/${data.audio_filename}`;
+                audioPlayer.style.display = 'block';
+            }
+        });
+
+        // Initial animations
+        gsap.from(".container", {
+            duration: 1.5,
+            opacity: 0,
+            y: 100,
+            ease: "elastic.out(1, 0.7)"
+        });
+
+        gsap.from("h1", {
+            duration: 1,
+            opacity: 0,
+            scale: 0.5,
+            ease: "back.out(1.7)",
+            delay: 0.5
+        });
+
+        gsap.from(".input-group", {
+            duration: 0.8,
+            opacity: 0,
+            x: -50,
+            stagger: 0.2,
+            ease: "power3.out",
+            delay: 1
+        });
+
+        gsap.from("button", {
+            duration: 0.8,
+            opacity: 0,
+            scale: 0.8,
+            ease: "elastic.out(1, 0.5)",
+            delay: 1.5
+        });
+    </script>
+</body>
+</html>
