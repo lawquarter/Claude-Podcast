@@ -115,7 +115,7 @@ Contributions to improve the AI Content Generator are welcome. Please follow the
 
 ## License
 
-[Specify your license here, e.g., MIT, GPL, etc.]
+GNU General Public License v3.0
 
 ## Acknowledgments
 
@@ -125,5 +125,5 @@ Contributions to improve the AI Content Generator are welcome. Please follow the
 
 ## Support
 
-For support, please open an issue in the GitHub repository or contact [your contact information].
+For support, please open an issue in the GitHub repository. 
 
