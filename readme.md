@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AI Content Generator is a Flask-based web application that leverages artificial intelligence to create podcast scripts and news articles from user-provided content. It utilizes the Anthropic API for text generation and the ElevenLabs API for text-to-speech conversion, allowing users to generate both written and audio content.
+The Claude Opus Podcast Generator is a Flask-based web application that leverages artificial intelligence to create podcast scripts and news articles from user-provided content. It utilizes the Anthropic API for text generation and the ElevenLabs API for text-to-speech conversion, allowing users to generate both written and audio content.
 
 ## Features
 
